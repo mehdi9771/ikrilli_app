@@ -77,7 +77,7 @@ if pd_st.session_state.user_role == "Customer":
     pd_st.subheader("Instant smart search engine across Algeria")
     
     # Visual Search Interface Bars
-    col_search, col_wilaya = pd_st.columns([2, 1])
+    col_search, col_wilaya = pd_st.columns(2)
     with col_search:
         search_keyword = pd_st.text_input("🔍 Type car name keywords (e.g., Golf, Mercedes, Clio):", "")
     with col_wilaya:
@@ -118,7 +118,7 @@ if pd_st.session_state.user_role == "Customer":
                 """, unsafe_allow_html=True)
                 
                 # Append conditional visual indicator tags inline
-                col_tag1, col_tag2, _ = pd_st.columns([1, 1, 1])
+                col_tag1, col_tag2 = pd_st.columns(2)
                 with col_tag1:
                     if has_green_badge:
                         pd_st.markdown('<span class="green-badge">🟢 Green Car - Most Trusted</span>', unsafe_allow_html=True)
@@ -144,7 +144,7 @@ if pd_st.session_state.user_role == "Customer":
                             'Message': f"Salâm! I am interested in renting your {row['Car_Name']} listed for {row['Price_DA']:,} DA. Is it available?",
                             'Is_Read': False
                         }])
-                        df_chats = pd.concat([df_chats, new_chat], ignore_index=False)
+                        df_chats = pd.concat([df_chats, new_chat], ignore_index=True)
                         df_chats.to_csv(CHATS_FILE, index=False)
                         pd_st.success(f"Order request sent! Go to the messaging hub panel below to speak with {row['Agency_Name']}.")
 
@@ -154,7 +154,6 @@ if pd_st.session_state.user_role == "Customer":
 elif pd_st.session_state.user_role == "Agency Renter":
     pd_st.title("💼 Agency Owner Portal")
     pd_st.subheader("Manage your vehicles and monthly listing status")
-    
     pd_st.info("💡 Flat Listing Rules: Your subscription covers ALL your active cars for a flat fee of 15,000 DA monthly.")
     
     # Add a new car configuration form
@@ -174,7 +173,7 @@ elif pd_st.session_state.user_role == "Agency Renter":
             elif not car_model:
                 pd_st.error("⚠️ Vehicle name field cannot be sent blank.")
             else:
-                              # Append newly input dataset directly to database storage CSV file
+                # Append newly input dataset directly to database storage CSV file
                 df_cars_load = pd.read_csv(CARS_FILE)
                 new_car_row = pd.DataFrame([{
                     'Agency_Name': pd_st.session_state.username,
@@ -187,8 +186,4 @@ elif pd_st.session_state.user_role == "Agency Renter":
                     'Total_Trips': 0,        
                     'Rating': 5.0            
                 }])
-                df_cars_load = pd.concat([df_cars_load, new_car_row], ignore_index=True)
-                df_cars_load.to_csv(CARS_FILE, index=False)
-                pd_st.success(f"Success! '{car_model}' has been successfully added to your inventory catalog.")
-
-'Total_Trips': 0,        # Fresh listings start at zero'Rating': 5.0            # Default clean rating score starting metric}])df_cars_load = pd.concat([df_cars_load, new_car_row], ignore_index=False)df_cars_load.to_csv(CARS_FILE, index=False)pd_st.success(f"Success! '{car_model}' has been successfully added to your inventory catalog.")# View active store items belonging to logged agency profilepd_st.write("### 📋 Your Current Displayed Fleet Inventory")df_my_cars = pd.read_csv(CARS_FILE)if not df_my_cars.empty and pd_st.session_state.username:df_my_cars = df_my_cars[df_my_cars['Agency_Name'] == pd_st.session_state.username]if df_my_cars.empty:pd_st.write("No cars uploaded yet under this current agency title profile.")else:pd_st.dataframe(df_my_cars[['Car_Name', 'Price_DA', 'Requires_Insurance', 'Insurance_Amount', 'Total_Trips', 'Rating']], use_container_width=True)else:pd_st.write("Enter your profile name on the sidebar menu panel to access listed records.")---------------------------------------------------------THE PERSISTENT IN-APP MESSAGING INTERFACE FEED HUB---------------------------------------------------------pd_st.markdown("---")pd_st.title("💬 Ikrilli Communications Hub")if not pd_st.session_state.username:pd_st.warning("Please configure your profile profile account name inside the left sidebar to unlock your inbox logs.")else:df_messages = pd.read_csv(CHATS_FILE)# Isolate unique conversation partners linked to your account profileall_partners = pd.Series(list(df_messages[df_messages['Sender'] == pd_st.session_state.username]['Receiver']) +list(df_messages[df_messages['Receiver'] == pd_st.session_state.username]['Sender'])).unique()if len(all_partners) == 0:pd_st.info("Your outbox inbox ledger history is currently clear.")else:# Choose chat window view dropdown select boxactive_chat_partner = pd_st.selectbox("Select an active thread profile history:", all_partners)if active_chat_partner:# Mark incoming items inside this conversation chain read instantlydf_messages.loc[(df_messages['Sender'] == active_chat_partner) & (df_messages['Receiver'] == pd_st.session_state.username), 'Is_Read'] = Truedf_messages.to_csv(CHATS_FILE, index=False)# Fetch message thread block rows sequentiallythread_df = df_messages[((df_messages['Sender'] == pd_st.session_state.username) & (df_messages['Receiver'] == active_chat_partner)) |((df_messages['Sender'] == active_chat_partner) & (df_messages['Receiver'] == pd_st.session_state.username))].sort_values(by='Timestamp')# Display text fields visually like messaging bubblesfor _, msg_row in thread_df.iterrows():align_style = "right" if msg_row['Sender'] == pd_st.session_state.username else "left"color_bubble = "#0076FF" if msg_row['Sender'] == pd_st.session_state.username else "#2C2F38"pd_st.markdown(f"""{msg_row['Sender']}: {msg_row['Message']}{msg_row['Timestamp']}""", unsafe_allow_html=True)# Reply action entry input box interface form sectionwith pd_st.form("chat_reply_form", clear_on_submit=True):reply_text = pd_st.text_input("Type your response message box:")send_reply = pd_st.form_submit_button("Send Response Text")if send_reply and reply_text:df_chats_save = pd.read_csv(CHATS_FILE)new_reply_row = pd.DataFrame([{'Sender': pd_st.session_state.username,'Receiver': active_chat_partner,'Timestamp': datetime.now().strftime("%Y-%m-%d %H:%M"),'Message': reply_text,'Is_Read': False}])df_chats_save = pd.concat([df_chats_save, new_reply_row], ignore_index=False)df_chats_save.to_csv(CHATS_FILE, index=False)pd_st.rerun()
+Use code with caution.df_cars_load = pd.concat([df_cars_load, new_car_row], ignore_index=True)df_cars_load.to_csv(CARS_FILE, index=False)pd_st.success(f"Success! '{car_model}' has been successfully added to your inventory catalog.")# View active store items belonging to logged agency profilepd_st.write("### 📋 Your Current Displayed Fleet Inventory")df_my_cars = pd.read_csv(CARS_FILE)if not df_my_cars.empty and pd_st.session_state.username:df_my_cars = df_my_cars[df_my_cars['Agency_Name'] == pd_st.session_state.username]if df_my_cars.empty:pd_st.write("No cars uploaded yet under this current agency title profile.")else:pd_st.dataframe(df_my_cars[['Car_Name', 'Price_DA', 'Requires_Insurance', 'Insurance_Amount', 'Total_Trips', 'Rating']], use_container_width=True)else:pd_st.write("Enter your profile name on the sidebar menu panel to access listed records.")---------------------------------------------------------THE PERSISTENT IN-APP MESSAGING INTERFACE FEED HUB---------------------------------------------------------pd_st.markdown("---")pd_st.title("💬 Ikrilli Communications Hub")if not pd_st.session_state.username:pd_st.warning("Please configure your profile account name inside the left sidebar to unlock your inbox logs.")else:df_messages = pd.read_csv(CHATS_FILE)# Isolate unique conversation partners linked to your account profileall_partners = pd.Series(list(df_messages[df_messages['Sender'] == pd_st.session_state.username]['Receiver']) +list(df_messages[df_messages['Receiver'] == pd_st.session_state.username]['Sender'])).dropna().unique()if len(all_partners) == 0:pd_st.info("Your chat history is currently clear.")else:# Choose chat window view dropdown select boxactive_chat_partner = pd_st.selectbox("Select an active thread profile history:", all_partners)if active_chat_partner:# Mark incoming items inside this conversation chain read instantlydf_messages.loc[(df_messages['Sender'] == active_chat_partner) & (df_messages['Receiver'] == pd_st.session_state.username), 'Is_Read'] = Truedf_messages.to_csv(CHATS_FILE, index=False)# Fetch message thread block rows sequentiallythread_df = df_messages[((df_messages['Sender'] == pd_st.session_state.username) & (df_messages['Receiver'] == active_chat_partner)) |((df_messages['Sender'] == active_chat_partner) & (df_messages['Receiver'] == pd_st.session_state.username))].sort_values(by='Timestamp')# Display text fields visually like messaging bubblesfor _, msg_row in thread_df.iterrows():align_style = "right" if msg_row['Sender'] == pd_st.session_state.username else "left"color_bubble = "#0076FF" if msg_row['Sender'] == pd_st.session_state.username else "#2C2F38"pd_st.markdown(f"""{msg_row['Sender']}: {msg_row['Message']}{msg_row['Timestamp']}""", unsafe_allow_html=True)# Reply action entry input box interface form sectionwith pd_st.form("chat_reply_form", clear_on_submit=True):reply_text = pd_st.text_input("Type your response message box:")send_reply = pd_st.form_submit_button("Send Response Text")if send_reply and reply_text:df_chats_save = pd.read_csv(CHATS_FILE)new_reply_row = pd.DataFrame([{'Sender': pd_st.session_state.username,'Receiver': active_chat_partner,'Timestamp': datetime.now().strftime("%Y-%m-%d %H:%M"),'Message': reply_text,'Is_Read': False}])df_chats_save = pd.concat([df_chats_save, new_reply_row], ignore_index=True)df_chats_save.to_csv(CHATS_FILE, index=False)pd_st.rerun()
